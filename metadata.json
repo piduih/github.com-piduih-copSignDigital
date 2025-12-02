@@ -1,0 +1,5 @@
+{
+  "name": "PDF Company Stamper",
+  "description": "An application to upload a PDF, stamp it with your company's information, and download the result. Company details can be configured in the settings.",
+  "requestFramePermissions": []
+}
