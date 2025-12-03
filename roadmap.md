@@ -2,6 +2,8 @@
 
 This document outlines the development path for the **PDF Company Stamper** application. The initial phase of development has been largely completed, delivering a robust tool with a rich feature set. This updated roadmap reflects the current state of the application and outlines the next steps for enhancement and future growth.
 
+> **User Guide:** For instructions on how to use the current features, please refer to [USER_MANUAL.md](./USER_MANUAL.md).
+
 ### Phase 1: Core Functionality (Completed)
 
 The application has successfully implemented the core functionality and advanced features planned in the initial roadmap. Key completed features include:

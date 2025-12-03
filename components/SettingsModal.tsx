@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import type { CompanySettings } from '../types';
 import { getStampSuggestion } from '../services/geminiService';
@@ -35,13 +36,36 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ initialSettings, onSave, 
         return () => window.removeEventListener('keydown', handleEsc);
     }, [onClose]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setSettings(prev => ({ ...prev, [name]: value }));
     };
 
     const handleSignatureTypeChange = (type: 'image' | 'text') => {
         setSettings(prev => ({ ...prev, signatureType: type }));
+    };
+
+    // Handle provider change specifically to set default models
+    const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const provider = e.target.value as 'gemini' | 'openai' | 'custom';
+        let defaultModel = '';
+        let defaultBaseUrl = '';
+
+        if (provider === 'gemini') {
+            defaultModel = 'gemini-2.5-flash';
+        } else if (provider === 'openai') {
+            defaultModel = 'gpt-4o';
+        } else {
+            defaultModel = 'llama3'; // Generic default for custom
+            defaultBaseUrl = 'http://localhost:11434/v1'; // Common default for Ollama
+        }
+
+        setSettings(prev => ({ 
+            ...prev, 
+            aiProvider: provider,
+            aiModel: defaultModel,
+            aiBaseUrl: defaultBaseUrl
+        }));
     };
 
      const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,10 +100,19 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ initialSettings, onSave, 
 
 
     const handleGenerateSuggestion = async () => {
+        // Validation check depends on provider
+        if (settings.aiProvider === 'gemini' || settings.aiProvider === 'openai') {
+             if (!settings.apiKey) {
+                setSuggestionError(`Please enter your ${settings.aiProvider} API Key to use this feature.`);
+                return;
+            }
+        }
+
         setIsSuggesting(true);
         setSuggestionError(null);
         try {
-            const suggestion = await getStampSuggestion(settings.name, settings.regNo, settings.address);
+            // Pass the full settings object so service knows which provider to use
+            const suggestion = await getStampSuggestion(settings, settings.name, settings.regNo, settings.address);
             if (suggestion) {
                setSettings(prev => ({...prev, ...suggestion}));
             }
@@ -223,17 +256,89 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ initialSettings, onSave, 
                             </div>
                         </div>
 
-                         <div className="mt-6">
-                            <button
-                                type="button"
-                                onClick={handleGenerateSuggestion}
-                                disabled={isSuggesting}
-                                className="w-full flex items-center justify-center gap-2 bg-slate-200 hover:bg-slate-300 disabled:bg-slate-100 disabled:cursor-wait text-slate-700 font-semibold py-2 px-4 border border-slate-300 rounded-md transition-all duration-200"
-                            >
-                                <SparklesIcon />
-                                {isSuggesting ? 'Generating...' : 'Get AI Suggestion for Stamp Text'}
-                            </button>
-                            {suggestionError && <p className="text-xs text-red-600 mt-2">{suggestionError}</p>}
+                        {/* AI Configuration Section */}
+                         <div className="mt-6 pt-4 border-t border-slate-200">
+                             <h3 className="text-base font-semibold text-slate-700 mb-3">AI Configuration</h3>
+                             
+                             <div className="space-y-4 bg-slate-50 p-4 rounded-lg border border-slate-200">
+                                <div>
+                                    <label htmlFor="aiProvider" className="block text-sm font-medium text-slate-600 mb-1">AI Provider</label>
+                                    <select
+                                        id="aiProvider"
+                                        name="aiProvider"
+                                        value={settings.aiProvider || 'gemini'}
+                                        onChange={handleProviderChange}
+                                        className={inputClass}
+                                    >
+                                        <option value="gemini">Google Gemini</option>
+                                        <option value="openai">OpenAI (ChatGPT)</option>
+                                        <option value="custom">Custom / Local (OpenAI Compatible)</option>
+                                    </select>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                     <div>
+                                        <label htmlFor="apiKey" className="block text-sm font-medium text-slate-600 mb-1">API Key</label>
+                                        <input 
+                                            type="password" 
+                                            id="apiKey" 
+                                            name="apiKey" 
+                                            value={settings.apiKey || ''} 
+                                            onChange={handleChange} 
+                                            className={inputClass} 
+                                            placeholder={settings.aiProvider === 'custom' ? 'Optional (if local)' : 'sk-... or AIza...'} 
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="aiModel" className="block text-sm font-medium text-slate-600 mb-1">Model Name</label>
+                                        <input 
+                                            type="text" 
+                                            id="aiModel" 
+                                            name="aiModel" 
+                                            value={settings.aiModel || ''} 
+                                            onChange={handleChange} 
+                                            className={inputClass} 
+                                            placeholder="e.g. gpt-4o, gemini-2.5-flash" 
+                                        />
+                                    </div>
+                                </div>
+
+                                {(settings.aiProvider === 'custom' || settings.aiProvider === 'openai') && (
+                                     <div>
+                                        <label htmlFor="aiBaseUrl" className="block text-sm font-medium text-slate-600 mb-1">
+                                            Base URL 
+                                            {settings.aiProvider === 'openai' && <span className="text-xs text-slate-400 font-normal"> (Leave empty for default)</span>}
+                                        </label>
+                                        <input 
+                                            type="text" 
+                                            id="aiBaseUrl" 
+                                            name="aiBaseUrl" 
+                                            value={settings.aiBaseUrl || ''} 
+                                            onChange={handleChange} 
+                                            className={inputClass} 
+                                            placeholder={settings.aiProvider === 'openai' ? 'https://api.openai.com/v1' : 'e.g. http://localhost:11434/v1'} 
+                                        />
+                                        {settings.aiProvider === 'custom' && (
+                                            <p className="text-xs text-slate-500 mt-1">
+                                                Works with Ollama, LM Studio, DeepSeek, etc.
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+
+                                <div>
+                                    <button
+                                        type="button"
+                                        onClick={handleGenerateSuggestion}
+                                        disabled={isSuggesting}
+                                        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-violet-100 to-fuchsia-100 hover:from-violet-200 hover:to-fuchsia-200 disabled:bg-slate-100 disabled:from-slate-100 disabled:to-slate-100 disabled:cursor-wait text-slate-700 font-semibold py-2 px-4 border border-violet-200 rounded-md transition-all duration-200"
+                                    >
+                                        <SparklesIcon />
+                                        {isSuggesting ? 'Testing...' : 'Test & Get Stamp Text Suggestion'}
+                                    </button>
+                                     {suggestionError && <p className="text-xs text-red-600 mt-2">{suggestionError}</p>}
+                                </div>
+                             </div>
                         </div>
                     </div>
 

@@ -1,3 +1,4 @@
+
 export interface CompanySettings {
     name: string;
     regNo: string;
@@ -5,6 +6,12 @@ export interface CompanySettings {
     phone: string;
     logo?: string; // base64 string of the logo
     
+    // AI Settings
+    apiKey?: string; // The key for the selected provider
+    aiProvider: 'gemini' | 'openai' | 'custom'; // The selected AI provider
+    aiModel: string; // e.g., 'gemini-2.5-flash', 'gpt-4o', 'deepseek-chat'
+    aiBaseUrl?: string; // Optional, for custom providers (e.g., http://localhost:11434/v1)
+
     // Signature Settings
     signatureType: 'image' | 'text';
     signature?: string; // base64 string of the signature (used if type is 'image')

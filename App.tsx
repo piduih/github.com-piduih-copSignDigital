@@ -1,9 +1,11 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import type { CompanySettings, StampOptions } from './types';
 import { stampPdf } from './services/pdfStamper';
 import { getPDFSummary } from './services/geminiService';
 import Header from './components/Header';
 import SettingsModal from './components/SettingsModal';
+import UserManualModal from './components/UserManualModal';
 import FileUpload from './components/FileUpload';
 import PDFPreview from './components/PDFPreview';
 import StampOptionsComponent from './components/StampOptions';
@@ -27,6 +29,10 @@ const App: React.FC = () => {
         signatureText: 'Director Name',
         signatureFont: 'Great Vibes',
         signature: undefined,
+        apiKey: '', // Initialize empty
+        aiProvider: 'gemini', // Default provider
+        aiModel: 'gemini-2.5-flash', // Default model
+        aiBaseUrl: '', 
     });
     const [stampOptions, setStampOptions] = useState<StampOptions>({
         position: { preset: 'bottom-left' },
@@ -47,6 +53,7 @@ const App: React.FC = () => {
         qrCodeData: 'https://aistudio.google.com/',
     });
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [isManualOpen, setIsManualOpen] = useState(false);
     const [pdfFiles, setPdfFiles] = useState<File[]>([]);
     const [stampedContentUrl, setStampedContentUrl] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -69,6 +76,11 @@ const App: React.FC = () => {
                 parsed.signatureType = parsed.signature ? 'image' : 'text';
                 parsed.signatureText = parsed.name || 'Sign Here';
                 parsed.signatureFont = 'Great Vibes';
+            }
+            // Migration for new AI settings
+            if (!parsed.aiProvider) {
+                parsed.aiProvider = 'gemini';
+                parsed.aiModel = 'gemini-2.5-flash';
             }
             setCompanySettings(parsed);
         } else {
@@ -148,6 +160,15 @@ const App: React.FC = () => {
     const handleSummarize = useCallback(async () => {
         if (pdfFiles.length !== 1) return;
         
+        // Check for API Key (except for local providers that might not need it, but let's enforce config check)
+        const isLocal = companySettings.aiProvider === 'custom' && companySettings.aiBaseUrl?.includes('localhost');
+        if (!companySettings.apiKey && !isLocal) {
+            setSummaryError(`Please enter your ${companySettings.aiProvider === 'gemini' ? 'Google Gemini' : 'AI Provider'} API Key in Settings.`);
+            // Optionally open settings automatically
+            setIsSettingsOpen(true); 
+            return;
+        }
+
         setIsSummarizing(true);
         setSummary(null);
         setSummaryError(null);
@@ -165,10 +186,11 @@ const App: React.FC = () => {
                 fullText += pageText + '\n\n';
             }
 
-            // Truncate to avoid exceeding token limits, focusing on the start of the document
+            // Truncate to avoid exceeding token limits
             const truncatedText = fullText.substring(0, 100000);
             
-            const result = await getPDFSummary(truncatedText);
+            // Pass the whole settings object to the service, so it knows provider/url/model
+            const result = await getPDFSummary(companySettings, truncatedText);
             setSummary(result);
 
         } catch (e) {
@@ -177,7 +199,7 @@ const App: React.FC = () => {
         } finally {
             setIsSummarizing(false);
         }
-    }, [pdfFiles]);
+    }, [pdfFiles, companySettings]);
 
 
     const resetState = () => {
@@ -207,13 +229,22 @@ const App: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-slate-100 text-slate-800 flex flex-col items-center p-4 sm:p-6 lg:p-8">
-            <Header onOpenSettings={() => setIsSettingsOpen(true)} />
+            <Header 
+                onOpenSettings={() => setIsSettingsOpen(true)} 
+                onOpenManual={() => setIsManualOpen(true)}
+            />
 
             {isSettingsOpen && (
                 <SettingsModal
                     initialSettings={companySettings}
                     onSave={handleSettingsSave}
                     onClose={() => setIsSettingsOpen(false)}
+                />
+            )}
+
+            {isManualOpen && (
+                <UserManualModal
+                    onClose={() => setIsManualOpen(false)}
                 />
             )}
 
