@@ -6,6 +6,7 @@ import { getPDFSummary } from './services/geminiService';
 import Header from './components/Header';
 import SettingsModal from './components/SettingsModal';
 import UserManualModal from './components/UserManualModal';
+import TermsPrivacyModal from './components/TermsPrivacyModal';
 import FileUpload from './components/FileUpload';
 import PDFPreview from './components/PDFPreview';
 import StampOptionsComponent from './components/StampOptions';
@@ -54,6 +55,7 @@ const App: React.FC = () => {
     });
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isManualOpen, setIsManualOpen] = useState(false);
+    const [isTermsOpen, setIsTermsOpen] = useState(false);
     const [pdfFiles, setPdfFiles] = useState<File[]>([]);
     const [stampedContentUrl, setStampedContentUrl] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -248,6 +250,12 @@ const App: React.FC = () => {
                 />
             )}
 
+            {isTermsOpen && (
+                <TermsPrivacyModal
+                    onClose={() => setIsTermsOpen(false)}
+                />
+            )}
+
             <main className="w-full max-w-6xl flex-grow flex flex-col items-center p-4 mt-8 sm:mt-16">
                 <div className="w-full bg-white rounded-2xl shadow-xl p-6 sm:p-10 border border-slate-200">
                     {error && (
@@ -260,10 +268,10 @@ const App: React.FC = () => {
                     {pdfFiles.length === 0 ? (
                         <div className="text-center">
                             <h1 className="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-600 mb-2">
-                                PDF Company Stamper
+                                Free Online PDF Stamper & Digital Signature
                             </h1>
                             <p className="text-slate-600 mb-8 max-w-xl mx-auto">
-                                Upload one or more PDFs to add your official company stamp. Customize the look and position in real-time.
+                                Easily upload PDF files to add your official company stamp (cop syarikat), logo, and digital signature securely. No signup required.
                             </p>
                             <FileUpload onFilesSelect={handleFilesSelect} />
                         </div>
@@ -342,8 +350,14 @@ const App: React.FC = () => {
                         </div>
                     )}
                 </div>
-                 <footer className="mt-8 text-sm text-slate-500">
-                    <p>Powered by React, Tailwind CSS, and pdf-lib.</p>
+                 <footer className="mt-8 text-sm text-slate-500 flex flex-col items-center gap-2">
+                    <p>Powered by <a href="https://afiladesign.com" target="_blank" rel="noopener noreferrer" className="hover:text-cyan-600 transition-colors">afiladesign.com</a></p>
+                    <button 
+                        onClick={() => setIsTermsOpen(true)}
+                        className="text-xs text-slate-400 hover:text-cyan-600 hover:underline transition-colors"
+                    >
+                        Terms & Privacy
+                    </button>
                 </footer>
             </main>
         </div>

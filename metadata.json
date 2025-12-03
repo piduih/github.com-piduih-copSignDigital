@@ -1,5 +1,5 @@
 {
   "name": "PDF Company Stamper",
-  "description": "An application to upload a PDF, stamp it with your company's information, and download the result. Company details can be configured in the settings.",
+  "description": "Free online tool to add company stamps, logos, digital signatures, and watermarks to PDF documents. Secure local processing with AI features.",
   "requestFramePermissions": []
 }
