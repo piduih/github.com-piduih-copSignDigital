@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import type { CompanySettings, StampOptions } from './types';
 import { stampPdf } from './services/pdfStamper';
@@ -26,18 +25,18 @@ const App: React.FC = () => {
         address: 'Level 1, Menara Example\nJalan Teknologi 1\n50000 Kuala Lumpur',
         phone: '+60 3-1234 5678',
         logo: undefined,
-        signatureType: 'text', // Default to text
+        signatureType: 'text',
         signatureText: 'Director Name',
         signatureFont: 'Great Vibes',
         signature: undefined,
-        apiKey: '', // Initialize empty
-        aiProvider: 'gemini', // Default provider
-        aiModel: 'gemini-2.5-flash', // Default model
+        apiKey: '', 
+        aiProvider: 'gemini', 
+        aiModel: 'gemini-2.5-flash', 
         aiBaseUrl: '', 
     });
     const [stampOptions, setStampOptions] = useState<StampOptions>({
         position: { preset: 'bottom-left' },
-        signaturePosition: { x: 0.1, y: 0.3 }, // Default independent position
+        signaturePosition: { x: 0.1, y: 0.3 }, 
         color: '#003399',
         fontSize: 10,
         pages: 'first',
@@ -46,12 +45,12 @@ const App: React.FC = () => {
         logoSize: 40,
         signatureSize: 30,
         includeLogo: true,
-        includeSignature: true, // Enable signature by default to show off the feature
+        includeSignature: true, 
         alignment: 'left',
         includeDate: false,
         includeFilename: false,
         includeQRCode: false,
-        qrCodeData: 'https://aistudio.google.com/',
+        qrCodeData: 'https://afiladesign.com/',
     });
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isManualOpen, setIsManualOpen] = useState(false);
@@ -73,20 +72,18 @@ const App: React.FC = () => {
         const savedSettings = localStorage.getItem('companySettings');
         if (savedSettings) {
             const parsed = JSON.parse(savedSettings);
-            // Migration for old settings that might not have signatureType
             if (!parsed.signatureType) {
                 parsed.signatureType = parsed.signature ? 'image' : 'text';
                 parsed.signatureText = parsed.name || 'Sign Here';
                 parsed.signatureFont = 'Great Vibes';
             }
-            // Migration for new AI settings
             if (!parsed.aiProvider) {
                 parsed.aiProvider = 'gemini';
                 parsed.aiModel = 'gemini-2.5-flash';
             }
             setCompanySettings(parsed);
         } else {
-            setIsSettingsOpen(true); // Open settings on first visit
+            setIsSettingsOpen(true); 
         }
     }, []);
 
@@ -110,11 +107,11 @@ const App: React.FC = () => {
 
     const processFiles = useCallback(async () => {
         if (pdfFiles.length === 0) {
-            setError("Please select one or more PDF files first.");
+            setError("Please pick a PDF file first.");
             return;
         }
         if (!companySettings.name) {
-            setError("Please set your company name in the settings.");
+            setError("We need your company name first. Please check Settings.");
             setIsSettingsOpen(true);
             return;
         }
@@ -126,7 +123,6 @@ const App: React.FC = () => {
 
         try {
             if (isBatchProcess) {
-                // Batch processing
                 const zip = new JSZip();
                 const total = pdfFiles.length;
                 for (let i = 0; i < total; i++) {
@@ -141,7 +137,6 @@ const App: React.FC = () => {
                 const url = URL.createObjectURL(zipBlob);
                 setStampedContentUrl(url);
             } else {
-                // Single file processing
                 const pdfFile = pdfFiles[0];
                 const pdfBytes = await pdfFile.arrayBuffer();
                 const stampedPdfBytes = await stampPdf(pdfBytes, companySettings, stampOptions, pdfFile.name);
@@ -151,8 +146,8 @@ const App: React.FC = () => {
             }
         } catch (e) {
             console.error("Failed to stamp PDF(s):", e);
-            const errorMessage = e instanceof Error ? e.message : "An unknown error occurred.";
-            setError(`Failed to process PDF(s). ${errorMessage}`);
+            const errorMessage = e instanceof Error ? e.message : "Something went wrong.";
+            setError(`Oops! We couldn't stamp your file. ${errorMessage}`);
         } finally {
             setIsLoading(false);
             setProcessingProgress(null);
@@ -162,11 +157,9 @@ const App: React.FC = () => {
     const handleSummarize = useCallback(async () => {
         if (pdfFiles.length !== 1) return;
         
-        // Check for API Key (except for local providers that might not need it, but let's enforce config check)
         const isLocal = companySettings.aiProvider === 'custom' && companySettings.aiBaseUrl?.includes('localhost');
         if (!companySettings.apiKey && !isLocal) {
-            setSummaryError(`Please enter your ${companySettings.aiProvider === 'gemini' ? 'Google Gemini' : 'AI Provider'} API Key in Settings.`);
-            // Optionally open settings automatically
+            setSummaryError(`To use the Smart Summary, you need to add your API Key in Settings.`);
             setIsSettingsOpen(true); 
             return;
         }
@@ -188,15 +181,12 @@ const App: React.FC = () => {
                 fullText += pageText + '\n\n';
             }
 
-            // Truncate to avoid exceeding token limits
             const truncatedText = fullText.substring(0, 100000);
-            
-            // Pass the whole settings object to the service, so it knows provider/url/model
             const result = await getPDFSummary(companySettings, truncatedText);
             setSummary(result);
 
         } catch (e) {
-             const errorMessage = e instanceof Error ? e.message : "An unknown error occurred while summarizing.";
+             const errorMessage = e instanceof Error ? e.message : "Unknown error.";
              setSummaryError(errorMessage);
         } finally {
             setIsSummarizing(false);
@@ -222,15 +212,15 @@ const App: React.FC = () => {
     const getButtonText = () => {
         if (isLoading) {
             if (isBatchProcess && processingProgress) {
-                return `Stamping ${processingProgress.current} of ${processingProgress.total}...`;
+                return `Working on file ${processingProgress.current} of ${processingProgress.total}...`;
             }
-            return "Stamping...";
+            return "Stamping your file...";
         }
-        return isBatchProcess ? "Generate Stamped ZIP" : "Generate Stamped PDF";
+        return isBatchProcess ? "Stamp All Files & Download (ZIP)" : "Stamp & Download PDF";
     };
 
     return (
-        <div className="min-h-screen bg-slate-100 text-slate-800 flex flex-col items-center p-4 sm:p-6 lg:p-8">
+        <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col items-center p-4 sm:p-6 lg:p-8 font-sans">
             <Header 
                 onOpenSettings={() => setIsSettingsOpen(true)} 
                 onOpenManual={() => setIsManualOpen(true)}
@@ -256,70 +246,82 @@ const App: React.FC = () => {
                 />
             )}
 
-            <main className="w-full max-w-6xl flex-grow flex flex-col items-center p-4 mt-8 sm:mt-16">
-                <div className="w-full bg-white rounded-2xl shadow-xl p-6 sm:p-10 border border-slate-200">
+            <main className="w-full max-w-6xl flex-grow flex flex-col items-center p-4 mt-8 sm:mt-12">
+                <div className="w-full bg-white rounded-3xl shadow-2xl p-6 sm:p-12 border border-slate-100">
                     {error && (
-                        <div className="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded-lg relative mb-6" role="alert">
-                            <strong className="font-bold">Error: </strong>
-                            <span className="block sm:inline">{error}</span>
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl relative mb-8 flex items-center gap-3 animate-fade-in" role="alert">
+                            <span className="text-xl">⚠️</span>
+                            <span className="block sm:inline font-medium">{error}</span>
                         </div>
                     )}
                     
                     {pdfFiles.length === 0 ? (
-                        <div className="text-center">
-                            <h1 className="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-600 mb-2">
-                                Free Online PDF Stamper & Digital Signature
+                        <div className="text-center py-8">
+                            <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-800 mb-4 tracking-tight">
+                                Stamp Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-600">PDFs</span> in Seconds
                             </h1>
-                            <p className="text-slate-600 mb-8 max-w-xl mx-auto">
-                                Easily upload PDF files to add your official company stamp (cop syarikat), logo, and digital signature securely. No signup required.
+                            <p className="text-slate-500 text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
+                                Use this free tool to add your company chop and signature. It's secure because everything stays on your computer.
                             </p>
                             <FileUpload onFilesSelect={handleFilesSelect} />
                         </div>
                     ) : (
                         <div>
                             {stampedContentUrl ? (
-                                <div className="flex flex-col items-center gap-6 animate-fade-in text-center">
-                                   <h2 className="text-2xl font-semibold text-green-600">Your File(s) are Ready!</h2>
+                                <div className="flex flex-col items-center gap-8 animate-fade-in text-center py-10">
+                                   <div className="bg-green-100 p-4 rounded-full">
+                                        <div className="text-4xl">🎉</div>
+                                   </div>
+                                   <div>
+                                        <h2 className="text-3xl font-bold text-slate-800 mb-2">You're All Done!</h2>
+                                        <p className="text-slate-500">Your stamped file is ready to be saved.</p>
+                                   </div>
                                     <a
                                         href={stampedContentUrl}
                                         download={isBatchProcess ? 'stamped-pdfs.zip' : (pdfFiles[0]?.name.replace('.pdf', '-stamped.pdf') || 'stamped.pdf')}
-                                        className="inline-flex items-center gap-3 bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg shadow-green-600/30"
+                                        className="inline-flex items-center gap-3 bg-green-600 hover:bg-green-500 text-white text-lg font-bold py-4 px-10 rounded-xl transition-all duration-300 ease-in-out transform hover:scale-105 shadow-xl shadow-green-600/30"
                                     >
                                         <DownloadIcon />
-                                        {isBatchProcess ? 'Download ZIP' : 'Download Stamped PDF'}
+                                        {isBatchProcess ? 'Download ZIP File' : 'Download Stamped PDF'}
                                     </a>
                                     <button
                                         onClick={resetState}
-                                        className="text-slate-500 hover:text-slate-800 transition-colors"
+                                        className="text-slate-400 hover:text-cyan-600 font-medium transition-colors mt-4"
                                     >
-                                        Stamp more files
+                                        Start Over with New Files
                                     </button>
                                 </div>
                             ) : (
                                 <>
-                                    <div className="flex justify-between items-center mb-6">
+                                    <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4 border-b border-slate-100 pb-6">
                                         <button
                                             onClick={resetState}
-                                            className="flex items-center gap-2 text-slate-500 hover:text-slate-800 transition-colors"
+                                            className="flex items-center gap-2 text-slate-400 hover:text-slate-700 transition-colors font-medium"
                                         >
                                             <ArrowLeftIcon />
-                                            <span className="hidden sm:inline">Change File(s)</span>
+                                            <span>Back</span>
                                         </button>
-                                        <h2 className="text-xl sm:text-2xl font-bold text-slate-800 text-center">{isBatchProcess ? "Review & Stamp" : "Preview & Stamp"}</h2>
-                                        <div className="w-28 text-right">
+                                        
+                                        <div className="flex flex-col items-center">
+                                            <h2 className="text-2xl font-bold text-slate-800">{isBatchProcess ? "Review Many Files" : "Check & Adjust"}</h2>
+                                            <p className="text-xs text-slate-400">Make sure it looks right before you download.</p>
+                                        </div>
+
+                                        <div className="w-auto sm:w-28 text-right">
                                              {!isBatchProcess && (
                                                 <button 
                                                     onClick={handleSummarize}
                                                     disabled={isSummarizing}
-                                                    className="inline-flex items-center gap-2 text-sm bg-slate-200 hover:bg-slate-300 disabled:bg-slate-100 disabled:cursor-wait text-slate-700 font-semibold py-2 px-3 border border-slate-300 rounded-md transition-all duration-200"
-                                                    title="Summarize PDF with AI"
+                                                    className="inline-flex items-center gap-2 text-sm bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold py-2 px-4 rounded-full transition-all duration-200"
+                                                    title="Ask AI to read this"
                                                 >
                                                    <DocumentTextIcon/>
-                                                    <span className="hidden md:inline">{isSummarizing ? 'Summarizing...' : 'Summarize'}</span>
+                                                    <span>{isSummarizing ? 'Reading...' : 'Summarize (AI)'}</span>
                                                 </button>
                                              )}
                                         </div>
                                     </div>
+
                                     {(summary || isSummarizing || summaryError) && !isBatchProcess && (
                                         <PDFSummary
                                             summary={summary}
@@ -328,19 +330,25 @@ const App: React.FC = () => {
                                             onClear={() => { setSummary(null); setSummaryError(null); }}
                                         />
                                     )}
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-start mt-4">
+
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16 items-start">
                                         {isBatchProcess ? (
                                             <FileQueue files={pdfFiles} onRemoveFile={handleRemoveFile} />
                                         ) : (
-                                            <PDFPreview file={pdfFiles[0]} settings={companySettings} options={stampOptions} onStampOptionsChange={setStampOptions} filename={pdfFiles[0].name}/>
+                                            <div className="bg-slate-200 rounded-xl p-4 shadow-inner">
+                                                <PDFPreview file={pdfFiles[0]} settings={companySettings} options={stampOptions} onStampOptionsChange={setStampOptions} filename={pdfFiles[0].name}/>
+                                            </div>
                                         )}
                                         <div className="flex flex-col justify-between h-full gap-8">
-                                            <StampOptionsComponent options={stampOptions} onChange={setStampOptions} disabled={isLoading} />
+                                            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                                                <StampOptionsComponent options={stampOptions} onChange={setStampOptions} disabled={isLoading} />
+                                            </div>
                                             <button
                                                 onClick={processFiles}
                                                 disabled={isLoading}
-                                                className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg shadow-blue-600/30"
+                                                className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed text-white text-lg font-bold py-4 px-8 rounded-xl transition-all duration-300 ease-in-out transform hover:scale-[1.02] shadow-xl shadow-blue-600/30 flex justify-center items-center gap-2"
                                             >
+                                                {isLoading && <div className="w-5 h-5 border-2 border-white/50 border-t-white rounded-full animate-spin"/>}
                                                 {getButtonText()}
                                             </button>
                                         </div>
@@ -350,13 +358,13 @@ const App: React.FC = () => {
                         </div>
                     )}
                 </div>
-                 <footer className="mt-8 text-sm text-slate-500 flex flex-col items-center gap-2">
-                    <p>Powered by <a href="https://afiladesign.com" target="_blank" rel="noopener noreferrer" className="hover:text-cyan-600 transition-colors">afiladesign.com</a></p>
+                 <footer className="mt-12 mb-6 text-sm text-slate-400 flex flex-col items-center gap-3">
+                    <p className="font-medium">Powered by <a href="https://afiladesign.com" target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:text-cyan-500 hover:underline">afiladesign.com</a></p>
                     <button 
                         onClick={() => setIsTermsOpen(true)}
-                        className="text-xs text-slate-400 hover:text-cyan-600 hover:underline transition-colors"
+                        className="text-xs hover:text-slate-600 transition-colors"
                     >
-                        Terms & Privacy
+                        Terms & Privacy Policy
                     </button>
                 </footer>
             </main>
