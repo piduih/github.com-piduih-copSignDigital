@@ -1,20 +1,72 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# PDF Company Stamper (Cop Syarikat Online)
 
-# Run and deploy your AI Studio app
+**The Easiest Way to Stamp & Sign PDFs / Cara Paling Mudah Cop Syarikat pada PDF**
 
-This contains everything you need to run your app locally.
+A secure, client-side web application that allows users to add company stamps (chops), signatures, and QR codes to PDF documents directly in the browser. No files are uploaded to any server, ensuring 100% privacy.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1hCiQ2GEAhW5VM37cdiaSqWDUnklpPUAM
+## ✨ Key Features (Ciri Utama)
 
-## Run Locally
+*   **🔒 100% Private:** All processing happens in your browser. Files never leave your device.
+*   **🖱️ Drag & Drop:** Simply drop your PDF, add your stamp, and download.
+*   **🤖 AI-Powered:**
+    *   **Smart Suggestions:** Uses Google Gemini / OpenAI to auto-format your address and company details professionally.
+    *   **Document Summary:** Summarize PDF content with one click.
+*   **📂 Batch Processing:** Stamp 100 files at once and download them as a ZIP.
+*   **🎨 Customizable:**
+    *   Move stamp position (Drag & Drop).
+    *   Add Company Logo.
+    *   Add Digital Signature (Type or Upload).
+    *   Add QR Codes.
 
-**Prerequisites:**  Node.js
+## 🛠️ Tech Stack
 
+*   **Framework:** React 19 (Vite)
+*   **Styling:** Tailwind CSS
+*   **PDF Manipulation:** `pdf-lib` & `pdf.js`
+*   **AI Integration:** Google Gen AI SDK (`@google/genai`) & Custom OpenAI-compatible endpoints.
+*   **Icons:** Heroicons (SVG)
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## 🚀 Getting Started
+
+### Prerequisites
+
+*   Node.js (v18 or higher)
+*   npm or yarn
+
+### Installation
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/yourusername/pdf-stamper.git
+    cd pdf-stamper
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+
+3.  **Run the development server:**
+    ```bash
+    npm run dev
+    ```
+
+4.  **Open your browser:**
+    Navigate to `http://localhost:5173`.
+
+## 🤖 AI Configuration (Optional)
+
+To use the AI features (Summarization & Suggestions), you need an API Key:
+
+1.  Click on the **Settings (Gear Icon)** in the app.
+2.  Go to **AI Configuration**.
+3.  Choose **Google Gemini** (Recommended for free tier) or OpenAI.
+4.  Enter your API Key.
+    *   Get Gemini Key: [Google AI Studio](https://aistudio.google.com/)
+
+## 📄 License
+
+This project is open-source. Feel free to use it for personal or commercial purposes.
+
+---
+**Powered by [afiladesign.com](https://afiladesign.com)**

@@ -14,6 +14,9 @@ import PDFSummary from './components/PDFSummary';
 import { DownloadIcon } from './components/icons/DownloadIcon';
 import { ArrowLeftIcon } from './components/icons/ArrowLeftIcon';
 import { DocumentTextIcon } from './components/icons/DocumentTextIcon';
+import { ShieldCheckIcon } from './components/icons/ShieldCheckIcon';
+import { ZapIcon } from './components/icons/ZapIcon';
+import { SparklesIcon } from './components/icons/SparklesIcon';
 
 declare const JSZip: any;
 declare const pdfjsLib: any;
@@ -256,14 +259,51 @@ const App: React.FC = () => {
                     )}
                     
                     {pdfFiles.length === 0 ? (
-                        <div className="text-center py-8">
-                            <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-800 mb-4 tracking-tight">
-                                Stamp Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-600">PDFs</span> in Seconds
-                            </h1>
-                            <p className="text-slate-500 text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
-                                Use this free tool to add your company chop and signature. It's secure because everything stays on your computer.
-                            </p>
-                            <FileUpload onFilesSelect={handleFilesSelect} />
+                        <div className="animate-fade-in">
+                            {/* ELI5 Hero Section */}
+                            <div className="text-center py-6 mb-8">
+                                <h1 className="text-4xl sm:text-6xl font-extrabold text-slate-900 mb-6 tracking-tight leading-tight">
+                                    The Easiest Way to <br/>
+                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-600">Cop & Sign PDFs</span>
+                                </h1>
+                                <p className="text-slate-500 text-lg sm:text-xl mb-8 max-w-2xl mx-auto leading-relaxed font-medium">
+                                    No printers. No scanners. No headaches. <br/>
+                                    Just drop your file, add your company stamp, and you're done.
+                                </p>
+                                
+                                <FileUpload onFilesSelect={handleFilesSelect} />
+                                
+                                {/* ELI5 Features Grid */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 text-left">
+                                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 hover:shadow-lg transition-shadow">
+                                        <div className="bg-green-100 w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                                            <ShieldCheckIcon />
+                                        </div>
+                                        <h3 className="font-bold text-xl text-slate-800 mb-2">100% Safe</h3>
+                                        <p className="text-slate-600">
+                                            Your files <strong>never</strong> leave your computer. We can't see them. The internet can't see them.
+                                        </p>
+                                    </div>
+                                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 hover:shadow-lg transition-shadow">
+                                        <div className="bg-yellow-100 w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                                            <ZapIcon />
+                                        </div>
+                                        <h3 className="font-bold text-xl text-slate-800 mb-2">Super Fast</h3>
+                                        <p className="text-slate-600">
+                                            Works instantly in your browser. Stamp 1 file or 100 files in seconds.
+                                        </p>
+                                    </div>
+                                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 hover:shadow-lg transition-shadow">
+                                        <div className="bg-purple-100 w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                                            <div className="text-purple-500"><SparklesIcon /></div>
+                                        </div>
+                                        <h3 className="font-bold text-xl text-slate-800 mb-2">Smart & Free</h3>
+                                        <p className="text-slate-600">
+                                            It's free to use. Plus, our AI can help you write your address perfectly or summarize long PDFs.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     ) : (
                         <div>
